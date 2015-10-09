@@ -24,10 +24,7 @@ def restaurantMenu(restaurant_id):
 @app.route("/restaurants/<int:restaurant_id>/new/", methods = ['GET','POST'])
 def newMenuItem(restaurant_id):
 	if request.method == 'POST':
-		print 'here'
-		newItem = MenuItem(name = request.form['name'],\
-							restaurant_id = restaurant_id)
-		print 'here'
+		newItem = MenuItem(name = request.form['name'],restaurant_id = restaurant_id)
 		session.add(newItem)
 		session.commit()
 		return redirect(url_for('restaurantMenu', restaurant_id = restaurant_id))
@@ -36,9 +33,18 @@ def newMenuItem(restaurant_id):
 
 # Task 2: Create route for editMenuItem function here
 
-@app.route("/restaurants/<int:restaurant_id>/<int:menu_id>/edit/")
+@app.route("/restaurants/<int:restaurant_id>/<int:menu_id>/edit/", methods = ['GET','POST'])
 def editMenuItem(restaurant_id, menu_id):
-    return "page to edit a menu item. Task 2 complete!"
+	if request.method == 'POST':
+		item = session.query(MenuItem).filter_by(id = menu_id).one()
+		item.name = request.form['name']
+		session.add(item)
+		session.commit()
+		return redirect(url_for('restaurantMenu', restaurant_id = restaurant_id))
+
+	menu_item = session.query(MenuItem).filter_by(id = menu_id).one()
+	restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
+	return render_template("editmenuitem.html", restaurant = restaurant ,menu_item = menu_item )
 
 # Task 3: Create a route for deleteMenuItem function here
 
