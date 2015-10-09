@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Restaurant, MenuItem
@@ -27,6 +27,7 @@ def newMenuItem(restaurant_id):
 		newItem = MenuItem(name = request.form['name'],restaurant_id = restaurant_id)
 		session.add(newItem)
 		session.commit()
+		flash("Congratulations! new menu item is created!!!!")
 		return redirect(url_for('restaurantMenu', restaurant_id = restaurant_id))
 	return render_template("newmenuitem.html", restaurant_id = restaurant_id)
 
@@ -35,23 +36,29 @@ def newMenuItem(restaurant_id):
 
 @app.route("/restaurants/<int:restaurant_id>/<int:menu_id>/edit/", methods = ['GET','POST'])
 def editMenuItem(restaurant_id, menu_id):
+	item = session.query(MenuItem).filter_by(id = menu_id).one()
+	restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
 	if request.method == 'POST':
-		item = session.query(MenuItem).filter_by(id = menu_id).one()
 		item.name = request.form['name']
 		session.add(item)
 		session.commit()
+		flash("One item successfully edited !!!!")
 		return redirect(url_for('restaurantMenu', restaurant_id = restaurant_id))
-
-	menu_item = session.query(MenuItem).filter_by(id = menu_id).one()
-	restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
-	return render_template("editmenuitem.html", restaurant = restaurant ,menu_item = menu_item )
+	return render_template("editmenuitem.html", restaurant = restaurant ,menu_item = item )
 
 # Task 3: Create a route for deleteMenuItem function here
 
-@app.route("/restaurants/<int:restaurant_id>/<int:menu_id>/delete/")
+@app.route("/restaurants/<int:restaurant_id>/<int:menu_id>/delete/", methods = ['GET','POST'])
 def deleteMenuItem(restaurant_id, menu_id):
-    return "page to delete a menu item. Task 3 complete!"
+	item = session.query(MenuItem).filter_by(id=menu_id).one()
+	if request.method == 'POST':
+		session.delete(item)
+		session.commit()
+		flash("One item successfully deleted !!!!")
+		return redirect(url_for("restaurantMenu",restaurant_id = restaurant_id))
+	return render_template("deletemenuitem.html", restaurant_id = restaurant_id, item = item)
 
 if __name__ == '__main__':
-    app.debug = True
-    app.run(host='0.0.0.0', port=5000)
+	app.secret_key = "super_secret_key_to_success"
+	app.debug = True
+	app.run(host='0.0.0.0', port=5000)

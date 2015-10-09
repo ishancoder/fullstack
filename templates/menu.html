@@ -7,8 +7,17 @@
 
 <a href={{url_for("newMenuItem", restaurant_id = restaurant.id)}}>Create a new menu item.</a><br>
 
-{% for i in items %}
+{% with message = get_flashed_messages()%}
+	{% if message %}
+		<ul>
+		{% for each in message %}
+			<li>{{each}}</li>
+		{% endfor %}
+		</ul>
+	{% endif %}
+{% endwith %}
 
+{% for i in items %}
 <div>
 <p>{{i.name}}</p>
 
